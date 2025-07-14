@@ -12,6 +12,7 @@ import gift.global.exception.WishNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class WishService {
     private final WishRepository wishRepository;
@@ -32,34 +33,25 @@ public class WishService {
     }
 
     public void updateWish(Long id, WishUpdateRequest req, String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(()->new TokenExpiredException(accessToken));
-        Wish wish = wishRepository.get(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
-        if (req.quantity() == 0){
-            int affectedRows = wishRepository.delete(id, member.getId());
-            if (affectedRows == 0) {
-                throw new RuntimeException("WishService : updateWish() failed (quantity == 0) - 500 Internal Server Error");
-            }
-            return;
-        }
+        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+        Wish wish = wishRepository.getWish(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
         wish.update(req.quantity());
-        int affectedRows = wishRepository.update(wish);
-        if (affectedRows == 0) {
+        if (!wishRepository.update(wish)) {
             throw new RuntimeException("WishService : updateWish() failed (quantity != 0) - 500 Internal Server Error");
         }
     }
 
     public void deleteWish(Long id, String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(()->new TokenExpiredException(accessToken));
-        Wish wish = wishRepository.get(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
-        int affectedRows = wishRepository.delete(wish.getId(), member.getId());
-        if (affectedRows == 0) {
+        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+        Wish wish = wishRepository.getWish(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
+        if (!wishRepository.delete(wish.getId(), member.getId())) {
             throw new RuntimeException("WishService : deleteWish() failed - 500 Internal Server Error");
         }
     }
 
     public List<WishResponse> getWishes(String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(()->new TokenExpiredException(accessToken));
-        return wishRepository.getAll(member.getId()).stream()
+        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+        return wishRepository.getAllWishes(member.getId()).stream()
                 .map(WishResponse::from)
                 .toList();
     }

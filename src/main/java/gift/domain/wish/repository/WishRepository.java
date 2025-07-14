@@ -15,7 +15,7 @@ public class WishRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public int save(Wish wish){
+    public int save(Wish wish) {
         String insertSql = "INSERT INTO wish (member_id, product_id, quantity) VALUES (:member_id, :product_id, :quantity)";
         return jdbcClient.sql(insertSql)
                 .param("member_id", wish.getMemberId())
@@ -24,7 +24,7 @@ public class WishRepository {
                 .update();
     }
 
-    public Optional<Wish> get(Long id, Long memberId) {
+    public Optional<Wish> getWish(Long id, Long memberId) {
         String sql = "SELECT * FROM wish WHERE id = :id AND member_id = :memberId";
         return jdbcClient.sql(sql)
                 .param("id", id)
@@ -33,15 +33,15 @@ public class WishRepository {
                 .optional();
     }
 
-    public int delete(Long id, Long memberId){
+    public boolean delete(Long id, Long memberId) {
         String sql = "DELETE FROM wish WHERE id = :id AND member_id = :memberId";
         return jdbcClient.sql(sql)
                 .param("id", id)
                 .param("memberId", memberId)
-                .update();
+                .update() != 0;
     }
 
-    public List<Wish> getAll(Long memberId){
+    public List<Wish> getAllWishes(Long memberId) {
         String sql = "SELECT * FROM wish WHERE member_id = :memberId";
         return jdbcClient.sql(sql)
                 .param("memberId", memberId)
@@ -49,13 +49,12 @@ public class WishRepository {
                 .list();
     }
 
-    public int update(Wish wish){
+    public boolean update(Wish wish) {
         String updateSql = "UPDATE wish SET quantity = :quantity WHERE id = :id AND member_id = :memberId";
-
         return jdbcClient.sql(updateSql)
                 .param("id", wish.getId())
                 .param("quantity", wish.getQuantity())
                 .param("memberId", wish.getMemberId())
-                .update();
+                .update() != 0;
     }
 }
