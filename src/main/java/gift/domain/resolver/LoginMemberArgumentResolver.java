@@ -15,7 +15,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final JwtProvider jwtProvider; // 실제로는 JwtTokenProvider 등 이름 사용
+    private final JwtProvider jwtProvider;
     private final MemberService memberService;
 
     public LoginMemberArgumentResolver(JwtProvider jwtProvider, MemberService memberService) {
