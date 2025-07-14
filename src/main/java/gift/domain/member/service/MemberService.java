@@ -13,20 +13,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MemberService {
     private final MemberRepository memberRepository;
-    private final AuthService authService;
 
     public MemberService(MemberRepository memberRepository, AuthService authService) {
         this.memberRepository = memberRepository;
-        this.authService = authService;
     }
 
-    public MemberInfoResponse getMemberInfo(Long id, String token) {
-        Member member = authService.getMemberByToken(token).orElseThrow(()-> new TokenExpiredException(token));
-        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())){
+    public MemberInfoResponse getMemberInfo(Long id, Member member) {
+        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())) {
             throw new NotAdminException("MemberService : getMemberInfo() failed - member is not admin");
         }
         Member targetMember = memberRepository.findById(id).orElseThrow(
@@ -35,9 +33,8 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberInfo(Long id, String token, MemberInfoUpdateRequest req) {
-        Member member = authService.getMemberByToken(token).orElseThrow(()->new TokenExpiredException(token));
-        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())){
+    public void updateMemberInfo(Long id, Member member, MemberInfoUpdateRequest req) {
+        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())) {
             throw new NotAdminException("MemberService : updateMemberInfo() failed - member is not admin");
         }
         Member targetMember = memberRepository.findById(id).orElseThrow(
@@ -50,9 +47,8 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMemberInfo(Long id, String token) {
-        Member member = authService.getMemberByToken(token).orElseThrow(()->new TokenExpiredException(token));
-        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())){
+    public void deleteMemberInfo(Long id, Member member) {
+        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())) {
             throw new NotAdminException("MemberService : deleteMemberInfo() failed - member is not admin");
         }
         Member targetMember = memberRepository.findById(id).orElseThrow(
@@ -60,9 +56,8 @@ public class MemberService {
         memberRepository.delete(targetMember.getId());
     }
 
-    public List<MemberInfoResponse> getMembers(String token) {
-        Member member = authService.getMemberByToken(token).orElseThrow(()->new TokenExpiredException(token));
-        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())){
+    public List<MemberInfoResponse> getMembers(Member member) {
+        if (!member.getRole().equalsIgnoreCase(RoleType.ADMIN.toString())) {
             throw new NotAdminException("MemberService : getMembers() failed - member is not admin");
         }
         List<Member> members = memberRepository.getAll();
@@ -76,5 +71,9 @@ public class MemberService {
                 .stream()
                 .map(MemberInfoResponse::from)
                 .toList();
+    }
+
+    public Optional<Member> findByEmail(String email) {
+        return memberRepository.findByEmail(email);
     }
 }

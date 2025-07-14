@@ -1,5 +1,7 @@
 package gift.domain.member.controller;
 
+import gift.domain.annotation.LoginMember;
+import gift.domain.member.Member;
 import gift.domain.member.dto.MemberInfoListResponse;
 import gift.domain.member.dto.MemberInfoResponse;
 import gift.domain.member.dto.MemberInfoUpdateRequest;
@@ -23,29 +25,29 @@ public class MemberController {
     @GetMapping("/{id}")
     public ResponseEntity<MemberInfoResponse> getMemberInfo(
             @PathVariable Long id,
-            @RequestHeader("Authorization") String accessToken) throws TokenExpiredException {
-        return new ResponseEntity<>(memberService.getMemberInfo(id, accessToken), HttpStatus.OK);
+            @LoginMember Member member) throws TokenExpiredException {
+        return new ResponseEntity<>(memberService.getMemberInfo(id, member), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateMemberInfo(
             @PathVariable Long id,
             @RequestBody MemberInfoUpdateRequest request,
-            @RequestHeader("Authorization") String accessToken) throws TokenExpiredException {
-        memberService.updateMemberInfo(id, accessToken, request);
+            @LoginMember Member member) throws TokenExpiredException {
+        memberService.updateMemberInfo(id, member, request);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMemberInfo(
             @PathVariable Long id,
-            @RequestHeader("Authorization") String accessToken) throws TokenExpiredException {
-        memberService.deleteMemberInfo(id, accessToken);
+            @LoginMember Member member) throws TokenExpiredException {
+        memberService.deleteMemberInfo(id, member);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<MemberInfoListResponse> getMemberInfos(@RequestHeader("Authorization") String accessToken) {
-        return new ResponseEntity<>(new MemberInfoListResponse(memberService.getMembers(accessToken)), HttpStatus.OK);
+    public ResponseEntity<MemberInfoListResponse> getMemberInfos(@LoginMember Member member) {
+        return new ResponseEntity<>(new MemberInfoListResponse(memberService.getMembers(member)), HttpStatus.OK);
     }
 }
