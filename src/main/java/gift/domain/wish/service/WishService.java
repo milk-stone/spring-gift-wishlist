@@ -16,15 +16,12 @@ import java.util.List;
 @Service
 public class WishService {
     private final WishRepository wishRepository;
-    private final AuthService authService;
 
     public WishService(WishRepository wishRepository, AuthService authService) {
         this.wishRepository = wishRepository;
-        this.authService = authService;
     }
 
-    public void createWish(WishRequest wishRequest, String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+    public void createWish(WishRequest wishRequest, Member member) {
         Wish wish = new Wish(member.getId(), wishRequest.productId(), wishRequest.quantity());
         int affectedRows = wishRepository.save(wish);
         if (affectedRows == 0) {
@@ -32,8 +29,7 @@ public class WishService {
         }
     }
 
-    public void updateWish(Long id, WishUpdateRequest req, String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+    public void updateWish(Long id, WishUpdateRequest req, Member member) {
         Wish wish = wishRepository.getWish(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
         wish.update(req.quantity());
         if (!wishRepository.update(wish)) {
@@ -41,16 +37,14 @@ public class WishService {
         }
     }
 
-    public void deleteWish(Long id, String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+    public void deleteWish(Long id, Member member) {
         Wish wish = wishRepository.getWish(id, member.getId()).orElseThrow(() -> new WishNotFoundException(id + "가 존재하지 않습니다."));
         if (!wishRepository.delete(wish.getId(), member.getId())) {
             throw new RuntimeException("WishService : deleteWish() failed - 500 Internal Server Error");
         }
     }
 
-    public List<WishResponse> getWishes(String accessToken) {
-        Member member = authService.getMemberByToken(accessToken).orElseThrow(() -> new TokenExpiredException(accessToken));
+    public List<WishResponse> getWishes(Member member) {
         return wishRepository.getAllWishes(member.getId()).stream()
                 .map(WishResponse::from)
                 .toList();

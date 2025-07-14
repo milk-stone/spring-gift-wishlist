@@ -1,10 +1,13 @@
 package gift.domain.wish.controller;
 
+import gift.domain.annotation.LoginMember;
+import gift.domain.member.Member;
 import gift.domain.wish.dto.WishListResponse;
 import gift.domain.wish.dto.WishRequest;
 import gift.domain.wish.dto.WishResponse;
 import gift.domain.wish.dto.WishUpdateRequest;
 import gift.domain.wish.service.WishService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,36 +23,36 @@ public class WishController {
 
     @PostMapping
     public ResponseEntity<Void> createWish(
-            @RequestBody WishRequest wishRequest,
-            @RequestHeader("Authorization") String accessToken
+            @Valid @RequestBody WishRequest wishRequest,
+            @LoginMember Member member
     ) {
-        wishService.createWish(wishRequest, accessToken);
+        wishService.createWish(wishRequest, member);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateWish(
             @PathVariable Long id,
-            @RequestBody WishUpdateRequest wishUpdateRequest,
-            @RequestHeader("Authorization") String accessToken
+            @Valid @RequestBody WishUpdateRequest wishUpdateRequest,
+            @LoginMember Member member
     ) {
-        wishService.updateWish(id, wishUpdateRequest, accessToken);
+        wishService.updateWish(id, wishUpdateRequest, member);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<WishResponse> deleteWish(
             @PathVariable Long id,
-            @RequestHeader("Authorization") String accessToken
+            @LoginMember Member member
     ) {
-        wishService.deleteWish(id, accessToken);
+        wishService.deleteWish(id, member);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<WishListResponse> getWishes(
-            @RequestHeader("Authorization") String accessToken
+            @LoginMember Member member
     ) {
-        return new ResponseEntity<>(new WishListResponse(wishService.getWishes(accessToken)), HttpStatus.OK);
+        return new ResponseEntity<>(new WishListResponse(wishService.getWishes(member)), HttpStatus.OK);
     }
 }
